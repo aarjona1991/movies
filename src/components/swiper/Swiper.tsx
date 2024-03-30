@@ -1,13 +1,11 @@
 import { FC } from 'react';
-import { Swiper as Slide, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
+import { Swiper as Slide, SwiperSlide } from 'swiper/react';
 import { SliderCoverDesign } from './slide-design/SliderCoverDesign';
 
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/scrollbar';
 
 //Types
 type Movie = {
