@@ -1,0 +1,20 @@
+.navbar {
+  &.home {
+    background-color: rgba($color: #1c1c1c, $alpha: 0.5);
+  }
+
+  &.not-home {
+    background-color: rgba($color: #1c1c1c, $alpha: 1);
+  }
+
+  top: 0;
+  animation: adjust-header linear both;
+  animation-timeline: scroll();
+  animation-range: 0 100px;
+}
+
+@keyframes adjust-header {
+  to {
+    background-color: rgba($color: #1c1c1c, $alpha: 1);
+  }
+}
