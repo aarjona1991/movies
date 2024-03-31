@@ -1,0 +1,7 @@
+.swiper#destacadas {
+  height: 100vh;
+
+  @include media-breakpoint-down(xl) {
+    margin-top: 65px;
+  }
+}
