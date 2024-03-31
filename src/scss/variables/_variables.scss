@@ -1,8 +1,10 @@
 $dark: #282828;
 $primary: #554f95;
 
-$theme-colors: (
+$colors: (
   "primary": $primary,
   "secondary": $secondary,
   "dark": $dark,
 );
+
+$theme-colors: map-merge($theme-colors, $colors);

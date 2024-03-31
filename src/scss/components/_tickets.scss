@@ -1,0 +1,39 @@
+#bucket {
+  @include media-breakpoint-up(lg) {
+    background-size: 35%;
+  }
+
+  @include media-breakpoint-up(xl) {
+    background-size: 25%;
+  }
+
+  z-index: -1;
+}
+
+#comprar-ticket {
+  @include media-breakpoint-up(lg) {
+    background-size: 35%;
+  }
+
+  @include media-breakpoint-up(xl) {
+    background-size: 25%;
+  }
+
+  z-index: -1;
+
+  form {
+    .form-group {
+      position: relative;
+
+      label {
+        position: absolute;
+        min-width: 160px;
+        top: -12.75px;
+        left: 15px;
+        background-color: #212529;
+        padding: 0px 10px;
+        z-index: 1;
+      }
+    }
+  }
+}

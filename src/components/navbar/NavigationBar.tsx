@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { Nav, Navbar, Container, Image } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 //types
 enum NavigationElementType {
@@ -24,15 +25,15 @@ const NavigationBar: FC<Navigation> = ({ logo, menu }) => {
         <>
             <Navbar expand="lg" className={route.toString() === '/' ? 'fixed-top home' : 'fixed-top not-home'}>
                 <Container>
-                    <Image src={logo} width={76} height={46} />
+                    <Nav.Link href="/"><Image src={logo} width={76} height={46} /></Nav.Link>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="ms-auto">
                             {menu.map((NavElement: NavigateItem, key: number) => (
                                 (NavElement.type === NavigationElementType.Link) ? (
-                                    <Nav.Link key={key} href={NavElement.url} className='mx-2'>{NavElement.label}</Nav.Link>
+                                    <Nav.Link key={key} href={NavElement.url} className='mx-2 btn'>{NavElement.label}</Nav.Link>
                                 ) : (
-                                    <Nav.Link key={key} href={NavElement.url} className='mx-2 btn bg-primary btn-primary' role="button">{NavElement.label}</Nav.Link>
+                                    <Link key={key} to={NavElement.url} className='mx-2 btn bg-primary btn-primary' role="button">{NavElement.label}</Link>
                                 )
                             ))}
                         </Nav>

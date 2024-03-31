@@ -1,0 +1,11 @@
+* {
+  font-family: Inter;
+}
+
+form {
+  input,
+  select {
+    height: 70px;
+    border: solid 1px $primary !important;
+  }
+}

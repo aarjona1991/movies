@@ -19,6 +19,7 @@ import { NavigationBar } from './components';
 
 //Vars
 import { nav } from './constants';
+import { Thanks } from './pages/Thanks';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -31,7 +32,8 @@ root.render(
         <NavigationBar logo={nav.logo} menu={nav.menu} />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/comprar-ticket" element={<ComprarTicket />} />
+          <Route path="/comprar-ticket/:slug?" element={<ComprarTicket />} />
+          <Route path="/thanks" element={<Thanks />} />
           {/* <Route path='*' element={<ErrorPage error="404" message="Not Found" />} /> */}
         </Routes>
       </Router>
