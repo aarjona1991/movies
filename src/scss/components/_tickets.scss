@@ -10,7 +10,8 @@
   z-index: -1;
 }
 
-#comprar-ticket {
+#comprar-ticket,
+#cartelera-container {
   @include media-breakpoint-up(lg) {
     background-size: 35%;
   }
