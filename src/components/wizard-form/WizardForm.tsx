@@ -1,15 +1,17 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { Form } from 'react-bootstrap';
+import * as Yup from 'yup';
+import { useFormik } from 'formik';
 import DatePicker from "react-datepicker";
-import { useAppDispatch, useAppSelector } from "../../store";
-import { useNavigate, useParams } from "react-router-dom";
 import { phoneNumberAutoFormat } from "../../utils";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../store";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { useGetMoviesQuery } from "../../store/services/movie";
 import { setPurchase } from "../../store/features/purchase/purchaseSlice";
 
 import "react-datepicker/dist/react-datepicker.css";
 import 'react-toastify/dist/ReactToastify.css';
+import moment from "moment";
 
 //Types
 type Movie = {
@@ -21,19 +23,14 @@ type Movie = {
     images: Array<string>,
     featured: boolean
 }
+
 const WizardForm = () => {
     const { slug } = useParams();
     const dispatch = useAppDispatch();
     const navigate = useNavigate()
-    const [seat, setSeat] = useState<string>()
-    const [name, setName] = useState<string>()
     const [step, setStep] = useState<number>(1)
-    const [email, setEmail] = useState<string>()
-    const [phone, setPhone] = useState<string>();
     const { refetch } = useGetMoviesQuery('film');
-    const [date, setDate] = useState<Date>(new Date())
     const { movies } = useAppSelector((state) => state.movie);
-    const [selectedMovie, setSelectedMovie] = useState<string>()
     const [seats, setSeats] = useState<Array<any> | undefined>(undefined);
 
     const next = () => {
@@ -45,57 +42,9 @@ const WizardForm = () => {
         }
     }
     const reset = () => {
-        setDate(new Date())
-        setName(undefined)
-        setSeat(undefined)
-        setEmail(undefined)
-        setPhone(undefined)
-        setSelectedMovie(undefined)
+        formik.resetForm()
     }
-    const onHandleSubmit = (event: any) => {
-        event.preventDefault()
-        let valid = false
-        if (step === 1) {
-            valid = validate([selectedMovie, date, seat]);
-            if (valid)
-                next()
-        }
-        if (step === 2) {
-            valid = validate([name, email, phone]);
-            if (valid) {
-                const purchase = {
-                    "name": name,
-                    "email": email,
-                    "phone": phone,
-                    "movie": selectedMovie,
-                    "date": date,
-                    "seat": seat
-                }
-                dispatch(setPurchase(purchase))
-                navigate('/thanks')
-            }
-        }
 
-        if (!valid)
-            toast.error('El formulario contiene errores', {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "dark",
-                transition: Bounce,
-            });
-    }
-    const validate = (arr: Array<any>) => {
-        return Array.from(arr).every(field => field !== undefined);
-    }
-    const onChangePhone = (e: ChangeEvent<HTMLInputElement>) => {
-        const targetValue = phoneNumberAutoFormat(e.target.value);
-        setPhone(targetValue);
-    }
     const randomSeats = () => {
         const arr: Array<{ row: number, seat: number }> = [];
         for (let i = 0; i < 10; i++) {
@@ -116,48 +65,114 @@ const WizardForm = () => {
         if (!movies) {
             refetch()
         }
-        if (slug) {
-            setSelectedMovie(slug)
-        }
         randomSeats()
     }, [movies, refetch, slug])
 
+    const arrValidationSchema = [
+        Yup.object().shape({
+            selectedMovie: Yup.string()
+                .required('Required'),
+            date: Yup.string()
+                .required('Required'),
+            seat: Yup.string()
+                .required('Required'),
+        }),
+        Yup.object().shape({
+            name: Yup.string()
+                .min(4, 'Must be 15 characters or less')
+                .required('Required'),
+            email: Yup.string().email('Invalid email address').required('Required'),
+            phone: Yup.string()
+                .required('Required'),
+        })
+    ]
+
+    const formik = useFormik({
+        initialValues: {
+            name: '',
+            seat: '',
+            email: '',
+            phone: '',
+            date: new Date().toISOString(),
+            selectedMovie: slug ? slug : '',
+        },
+        validationSchema: arrValidationSchema[step - 1],
+        onSubmit: values => {
+            if (step === 1) {
+                next()
+            }
+            if (step === 2) {
+                dispatch(setPurchase(values))
+                navigate('/thanks')
+            }
+        },
+    });
+
     return (
         <>
-            <form id="ticket-form" noValidate onSubmit={onHandleSubmit}>
+            <form id="ticket-form" noValidate onSubmit={formik.handleSubmit}>
                 {(step === 1) && (
                     <>
                         <div className="mb-4 form-group">
-                            <label htmlFor="movie" className="small text-white">Seleccione película</label>
-                            <Form.Select id="movie" className="form-select form-select-lg mb-3" value={selectedMovie} onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedMovie(e.target.value)} required>
+                            <label htmlFor="selectedMovie" className="small text-white">Seleccione película</label>
+                            <select
+                                id="selectedMovie"
+                                name="selectedMovie"
+                                className="form-select form-select-lg mb-3"
+                                value={formik.values.selectedMovie}
+                                onChange={
+                                    (e: ChangeEvent<HTMLSelectElement>) => {
+                                        formik.setFieldValue('selectedMovie', e.target.value)
+                                    }
+                                }
+                                onBlur={formik.handleBlur}
+                                required>
                                 <option>Open this select menu</option>
                                 {movies.map((m: Movie, idx: number) => (
                                     <option key={idx} value={m.title.replaceAll(' ', '-').toLowerCase()}>{m.title}</option>
                                 ))}
-                            </Form.Select>
+                            </select>
+                            {formik.touched.selectedMovie && formik.errors.selectedMovie ? (
+                                <div className="text-danger small">{formik.errors.selectedMovie}</div>
+                            ) : null}
                         </div>
                         <div className="mb-4 form-group">
                             <label htmlFor="funcion">Seleccione función</label>
                             <DatePicker
                                 id="funcion"
-                                selected={date}
-                                onChange={(d: any) => setDate(d)}
+                                selected={new Date(formik.values.date)}
+                                onChange={(d: any) => {
+                                    formik.setFieldValue('date', d)
+                                }}
+                                onBlur={formik.handleBlur}
                                 showTimeInput={true}
-                                onChangeRaw={(e: ChangeEvent<HTMLInputElement>) => setDate(new Date(e.target.value))}
+                                onChangeRaw={(e: ChangeEvent<HTMLInputElement>) => formik.setFieldValue('date', new Date(e.target.value))}
                                 placeholderText="mm/dd/yyyy:HH:mm"
                                 dateFormat={'MM/dd/yyyy HH:mm'}
                                 className={"form-control position-relative"}
                                 wrapperClassName="w-100"
                             />
+                            {formik.touched.date && formik.errors.date ? (
+                                <div className="text-danger small">{formik.errors.date}</div>
+                            ) : null}
                         </div>
                         <div className="mb-4 form-group">
                             <label htmlFor="asiento">Seleccione Asiento</label>
-                            <Form.Select id="asiento" className="form-select form-select-lg mb-3" value={seat} onChange={(e: ChangeEvent<HTMLSelectElement>) => setSeat(e.target.value)} required>
+                            <select
+                                id="asiento"
+                                name="seat"
+                                className="form-select form-select-lg mb-3"
+                                value={formik.values.seat}
+                                onChange={(e: ChangeEvent<HTMLSelectElement>) => formik.setFieldValue('seat', e.target.value)}
+                                required>
                                 <option>Open this select menu</option>
                                 {seats?.map((s: { row: number, seat: number }, idx: number) => (
                                     <option value={`Fila ${s.row} - Asiento - ${s.seat}`} key={idx}>{`Fila ${s.row} - Asiento - ${s.seat}`}</option>
                                 ))}
-                            </Form.Select>
+                            </select>
+                            {formik.touched.seat && formik.errors.seat ? (
+                                <div className="text-danger small">{formik.errors.seat}</div>
+                            ) : null}
                         </div>
                     </>
                 )}
@@ -166,15 +181,24 @@ const WizardForm = () => {
                     <>
                         <div className="mb-3 form-group">
                             <label htmlFor="name" className="small text-white">Nombre completo</label>
-                            <Form.Control type="text" name="name" className="form-control" id="nombre" value={name} onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)} required />
+                            <input type="text" name="name" className="form-control" id="nombre" value={formik.values.name} min={4} onChange={(e: ChangeEvent<HTMLInputElement>) => formik.setFieldValue('name', e.target.value)} required />
+                            {formik.touched.name && formik.errors.name ? (
+                                <div className="text-danger small">{formik.errors.name}</div>
+                            ) : null}
                         </div>
                         <div className="mb-3 form-group">
                             <label htmlFor="email">E-mail</label>
-                            <Form.Control id="email" type="email" className="form-control" value={email} onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} required />
+                            <input id="email" type="email" className="form-control" value={formik.values.email} onChange={(e: ChangeEvent<HTMLInputElement>) => formik.setFieldValue('email', e.target.value)} required />
+                            {formik.touched.email && formik.errors.email ? (
+                                <div className="text-danger small">{formik.errors.email}</div>
+                            ) : null}
                         </div>
                         <div className="mb-3 form-group">
                             <label htmlFor="telefono">Teléfono</label>
-                            <Form.Control type="tel" name="phone" id="telefono" className="form-control" value={phone} onChange={onChangePhone} maxLength={11} required />
+                            <input type="tel" name="phone" id="telefono" className="form-control" value={formik.values.phone} onChange={(e) => formik.setFieldValue('phone', phoneNumberAutoFormat(e.target.value))} maxLength={11} required />
+                            {formik.touched.phone && formik.errors.phone ? (
+                                <div className="text-danger small">{formik.errors.phone}</div>
+                            ) : null}
                         </div>
                     </>
                 )}
