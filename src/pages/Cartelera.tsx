@@ -21,11 +21,10 @@ type Movies = {
 const Cartelera: FC<Movies> = ({ movies }) => {
     return (
         <>
-            <div className="w-100" style={{
+            <div id="cartelera-container" className="w-100" style={{
                 backgroundImage: `url('/media/popcorn.svg')`,
                 backgroundRepeat: 'repeat-y',
                 backgroundPosition: 'right',
-                backgroundSize: '25%'
             }}>
                 <div id="cartelera" className="container">
                     <div className="row mb-5 mt-4">
