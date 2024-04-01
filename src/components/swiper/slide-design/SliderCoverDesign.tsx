@@ -40,7 +40,7 @@ const SliderCoverDesign: FC<Movie> = ({
                                             <img className="img-buttons" src="/media/play.svg" alt="trailer" />
                                             <span>Ver Trailer</span>
                                         </a>
-                                        <a href="/comprar-ticket" className="btn mx-3 d-flex flex-column align-items-center">
+                                        <a href={"/comprar-ticket/" + title.replaceAll(' ', '-').toLowerCase()} className="btn mx-3 d-flex flex-column align-items-center">
                                             <img className="img-buttons" src="/media/movie-ticket-original.svg" alt="trailer" />
                                             <span>Comprar Ticket</span>
                                         </a>
